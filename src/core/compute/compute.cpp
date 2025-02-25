@@ -1,4 +1,4 @@
-#include <core/compute.h>
+#include <core/compute/compute.h>
 #include <stdlib.h>
 
 class CAIComputePipeline {
