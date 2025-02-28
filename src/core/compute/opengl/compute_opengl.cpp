@@ -13,6 +13,7 @@ CAIDataTexture::CAIDataTexture(GLsizei width, GLsizei height)
 
     glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
+    // TODO: 3 data channels (r, g, b) -> Maybe increase to 4? Or make it variable?
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
     // GL_NEAREST is important to access the data in the shader correctly
@@ -28,13 +29,13 @@ CAIDataTexture::CAIDataTexture(GLsizei width, GLsizei height)
         throw "Framebuffer creation failed";
 }
 
-CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t argumentsCount, size_t resultsCount)
+CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t resultsCount)
 {
     // Init inputs, arguments and results texture
 
-    CAIDataTexture inputsTexture = CAIDataTexture((GLuint) inputsCount, 1);    
-    CAIDataTexture argumentsTexture = CAIDataTexture((GLuint) inputsCount, (GLuint) resultsCount);    
-    CAIDataTexture resultsTexture = CAIDataTexture((GLuint) resultsCount, 1);    
+    inputsTexture = CAIDataTexture((GLuint) inputsCount, (GLuint) 1);    
+    argumentsTexture = CAIDataTexture((GLuint) inputsCount, (GLuint) resultsCount);    
+    resultsTexture = CAIDataTexture((GLuint) resultsCount, (GLuint) 1);    
     
     // Init shader program
     // Check for OpenGL errors (and throw exception)

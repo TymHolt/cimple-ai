@@ -11,15 +11,15 @@ class CAIDataTexture
         GLuint framebufferHandle;
         GLuint textureHandle;
     public:
-        CAIDataTexture(GLsizei width, GLsizei height);    
+        CAIDataTexture(GLsizei width = 1, GLsizei height = 1);    
 };
 
 class CAIOpenGLComputePipeline : public CAIComputePipeline
 {
     private:
-        
+        CAIDataTexture inputsTexture, argumentsTexture, resultsTexture;
     public:
-        CAIOpenGLComputePipeline(size_t inputsCount, size_t argumentsCount, size_t resultsCount);
+        CAIOpenGLComputePipeline(size_t inputsCount = 1, size_t resultsCount = 1);
         void setInputs(float *inputs) override;
         void setArguments(float *arguments) override;
         void compute(float *results) override;
