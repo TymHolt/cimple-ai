@@ -1,4 +1,3 @@
-#include <shader/shader_baker.h>
 #include <util/file_loader.h>
 #include <iostream>
 #include <string>

@@ -2,6 +2,8 @@
 #include <core/compute/compute.h>
 #include <glad/glad.h>
 
+
+
 CAIDataTexture::CAIDataTexture(GLsizei width, GLsizei height)
 {
     GLuint framebufferHandle = 0;
@@ -37,7 +39,24 @@ CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t re
     argumentsTexture = CAIDataTexture((GLuint) inputsCount, (GLuint) resultsCount);    
     resultsTexture = CAIDataTexture((GLuint) resultsCount, (GLuint) 1);    
     
-    // Init shader program
+    // Init shader program and vao
+
+    programHandle = glCreateProgram();
+    
+    inputsTextureUL = glGetUniformLocation(programHandle, "uInputsTexture");
+    argumentsTextureUL = glGetUniformLocation(programHandle, "uArgumentsTexture");
+    inputsCountUL = glGetUniformLocation(programHandle, "uInputsCount");
+    outputsCountUL = glGetUniformLocation(programHandle, "uOutputsCount");
+
+    float vertexData[] = 
+    {
+        -1.0f, 1.0f,
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        1.0f, 1.0f
+    };
+    glGenVertexArrays(1, &vaoHandle);
+
     // Check for OpenGL errors (and throw exception)
 }
 

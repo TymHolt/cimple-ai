@@ -18,6 +18,9 @@ class CAIOpenGLComputePipeline : public CAIComputePipeline
 {
     private:
         CAIDataTexture inputsTexture, argumentsTexture, resultsTexture;
+        GLuint vaoHandle, programHandle;
+        GLuint inputsTextureUL, argumentsTextureUL;
+        GLuint inputsCountUL, outputsCountUL;
     public:
         CAIOpenGLComputePipeline(size_t inputsCount = 1, size_t resultsCount = 1);
         void setInputs(float *inputs) override;

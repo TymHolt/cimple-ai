@@ -1,12 +1,11 @@
 #version 330 core
 
-// in type in_variable_name;
+in vec2 aScreenCoords;
 
-// out type out_variable_name;
-  
-// uniform type uniform_name;
-  
+out float pFactor;
+
 void main()
 {
-  gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
+    pFactor = (aScreenCoords.x + 1.0) / 2.0;
+    gl_Position = vec4(aScreenCoords, 0.5, 1.0);
 }
