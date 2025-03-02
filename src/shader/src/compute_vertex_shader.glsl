@@ -1,6 +1,6 @@
 #version 330 core
 
-in vec2 aScreenCoords;
+layout(location = 0) in vec2 aScreenCoords;
 
 out float pFactor;
 
