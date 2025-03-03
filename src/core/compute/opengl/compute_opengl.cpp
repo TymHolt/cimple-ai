@@ -34,9 +34,9 @@ CAIDataTexture::CAIDataTexture(GLsizei width, GLsizei height)
         throw "Framebuffer creation failed";
 }
 
-GLuint createShader(std::string source)
+GLuint createShader(GLuint type, std::string source)
 {
-    GLuint shaderHandle = glCreateShader(GL_VERTEX_SHADER);
+    GLuint shaderHandle = glCreateShader(type);
     const char *shaderSource = source.c_str();
     glShaderSource(shaderHandle, 1, &shaderSource, NULL);
     glCompileShader(shaderHandle);
@@ -66,8 +66,8 @@ CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t re
     // Init shader program and vao
 
     programHandle = glCreateProgram();
-    GLuint vertexShaderHandle = createShader(compute_vertex_shader::content);
-    GLuint fragmentShaderHandle = createShader(compute_fragment_shader::content);
+    GLuint vertexShaderHandle = createShader(GL_VERTEX_SHADER, compute_vertex_shader::content);
+    GLuint fragmentShaderHandle = createShader(GL_FRAGMENT_SHADER, compute_fragment_shader::content);
     glAttachShader(programHandle, vertexShaderHandle);
     glAttachShader(programHandle, fragmentShaderHandle);
     glLinkProgram(programHandle);
@@ -106,6 +106,13 @@ CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t re
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
     // Check for OpenGL errors (and throw exception)
+
+    GLenum errorCode = glGetError();
+    if(errorCode != GL_NO_ERROR) 
+    {
+        std::cerr << "OpenGL error encountered: " << errorCode << std::endl;
+        throw "OpenGL error while creating compute pipeline";
+    }
 }
 
 void CAIOpenGLComputePipeline::setInputs(float *inputs) 
