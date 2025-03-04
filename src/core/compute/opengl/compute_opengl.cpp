@@ -5,8 +5,6 @@
 #include <shader/baked/compute_vertex_shader.h>
 #include <shader/baked/compute_fragment_shader.h>
 
-#define MAX_LOG_LENGTH 1024
-
 CAIDataTexture::CAIDataTexture(GLsizei width, GLsizei height)
 {
     GLuint framebufferHandle = 0;
@@ -34,27 +32,6 @@ CAIDataTexture::CAIDataTexture(GLsizei width, GLsizei height)
         throw "Framebuffer creation failed";
 }
 
-GLuint createShader(GLuint type, std::string source)
-{
-    GLuint shaderHandle = glCreateShader(type);
-    const char *shaderSource = source.c_str();
-    glShaderSource(shaderHandle, 1, &shaderSource, NULL);
-    glCompileShader(shaderHandle);
-
-    int compileState;
-    char log[MAX_LOG_LENGTH];
-    glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &compileState);
-
-    if(!compileState)
-    {
-        glGetShaderInfoLog(shaderHandle, MAX_LOG_LENGTH, NULL, log);
-        std::cerr << "Shader compile log: " << log << std::endl;
-        throw "Shader compilation failed";
-    }
-
-    return shaderHandle;
-}
-
 CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t resultsCount)
 {
     // Init inputs, arguments and results texture
@@ -65,31 +42,12 @@ CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t re
     
     // Init shader program and vao
 
-    programHandle = glCreateProgram();
-    GLuint vertexShaderHandle = createShader(GL_VERTEX_SHADER, compute_vertex_shader::content);
-    GLuint fragmentShaderHandle = createShader(GL_FRAGMENT_SHADER, compute_fragment_shader::content);
-    glAttachShader(programHandle, vertexShaderHandle);
-    glAttachShader(programHandle, fragmentShaderHandle);
-    glLinkProgram(programHandle);
+    shaderProgram = CAIGLShaderProgram(compute_vertex_shader::content, compute_fragment_shader::content);
 
-    glDeleteShader(vertexShaderHandle); // Shaders are not needed anymore after linking
-    glDeleteShader(fragmentShaderHandle); 
-
-    int linkState;
-    char log[MAX_LOG_LENGTH];
-    glGetProgramiv(programHandle, GL_LINK_STATUS, &linkState);
-
-    if(!linkState)
-    {
-        glGetProgramInfoLog(programHandle, MAX_LOG_LENGTH, NULL, log);
-        std::cerr << "Progran link log: " << log << std::endl;
-        throw "Program linking failed";
-    }
-
-    inputsTextureUL = glGetUniformLocation(programHandle, "uInputsTexture");
-    argumentsTextureUL = glGetUniformLocation(programHandle, "uArgumentsTexture");
-    inputsCountUL = glGetUniformLocation(programHandle, "uInputsCount");
-    outputsCountUL = glGetUniformLocation(programHandle, "uOutputsCount");
+    inputsTextureUL = shaderProgram.getUniformLocation("uInputsTexture");
+    argumentsTextureUL = shaderProgram.getUniformLocation("uArgumentsTexture");
+    inputsCountUL = shaderProgram.getUniformLocation("uInputsCount");
+    outputsCountUL = shaderProgram.getUniformLocation("uOutputsCount");
 
     float vertexData[] = 
     {
@@ -132,7 +90,7 @@ void CAIOpenGLComputePipeline::compute(float *results)
     // Use results texture as frame buffer
     // Uniform and use textures
 
-    glUseProgram(programHandle);
+    shaderProgram.use();
 
     // "Draw" call
     // Fetch results from texture

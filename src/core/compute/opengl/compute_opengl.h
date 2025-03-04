@@ -4,6 +4,7 @@
 #include <core/compute/compute.h>
 #include <stdlib.h>
 #include <glad/glad.h>
+#include <util/gl_utils.h>
 
 class CAIDataTexture
 {
@@ -18,7 +19,8 @@ class CAIOpenGLComputePipeline : public CAIComputePipeline
 {
     private:
         CAIDataTexture inputsTexture, argumentsTexture, resultsTexture;
-        GLuint vaoHandle, programHandle;
+        GLuint vaoHandle;
+        CAIGLShaderProgram shaderProgram;
         GLuint inputsTextureUL, argumentsTextureUL;
         GLuint inputsCountUL, outputsCountUL;
     public:
