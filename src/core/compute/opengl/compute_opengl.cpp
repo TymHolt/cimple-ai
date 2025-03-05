@@ -7,14 +7,14 @@
 
 CAIDataTexture::CAIDataTexture(GLsizei width, GLsizei height)
 {
-    GLuint framebufferHandle = 0;
-    glGenFramebuffers(1, &framebufferHandle);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferHandle);
+    m_framebufferHandle = 0;
+    glGenFramebuffers(1, &m_framebufferHandle);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferHandle);
 
-    GLuint renderedTexture;
-    glGenTextures(1, &renderedTexture);
+    m_textureHandle;
+    glGenTextures(1, &m_textureHandle);
 
-    glBindTexture(GL_TEXTURE_2D, renderedTexture);
+    glBindTexture(GL_TEXTURE_2D, m_textureHandle);
 
     // TODO: 3 data channels (r, g, b) -> Maybe increase to 4? Or make it variable?
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
@@ -23,31 +23,33 @@ CAIDataTexture::CAIDataTexture(GLsizei width, GLsizei height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_textureHandle, 0);
 
     GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, DrawBuffers);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         throw "Framebuffer creation failed";
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t resultsCount)
 {
     // Init inputs, arguments and results texture
 
-    inputsTexture = CAIDataTexture((GLuint) inputsCount, (GLuint) 1);    
-    argumentsTexture = CAIDataTexture((GLuint) inputsCount, (GLuint) resultsCount);    
-    resultsTexture = CAIDataTexture((GLuint) resultsCount, (GLuint) 1);    
+    m_inputsTexture = CAIDataTexture((GLuint) inputsCount, (GLuint) 1);    
+    m_argumentsTexture = CAIDataTexture((GLuint) inputsCount, (GLuint) resultsCount);    
+    m_resultsTexture = CAIDataTexture((GLuint) resultsCount, (GLuint) 1);    
     
     // Init shader program and vao
 
-    shaderProgram = CAIGLShaderProgram(compute_vertex_shader::content, compute_fragment_shader::content);
+    m_shaderProgram = CAIGLShaderProgram(compute_vertex_shader::content, compute_fragment_shader::content);
 
-    inputsTextureUL = shaderProgram.getUniformLocation("uInputsTexture");
-    argumentsTextureUL = shaderProgram.getUniformLocation("uArgumentsTexture");
-    inputsCountUL = shaderProgram.getUniformLocation("uInputsCount");
-    outputsCountUL = shaderProgram.getUniformLocation("uOutputsCount");
+    m_inputsTextureUL = m_shaderProgram.getUniformLocation("uInputsTexture");
+    m_argumentsTextureUL = m_shaderProgram.getUniformLocation("uArgumentsTexture");
+    m_inputsCountUL = m_shaderProgram.getUniformLocation("uInputsCount");
+    m_outputsCountUL = m_shaderProgram.getUniformLocation("uOutputsCount");
 
     float vertexData[] = 
     {
@@ -56,12 +58,6 @@ CAIOpenGLComputePipeline::CAIOpenGLComputePipeline(size_t inputsCount, size_t re
         1.0f, -1.0f,
         1.0f, 1.0f
     };
-
-    glGenVertexArrays(1, &vaoHandle);
-    GLuint vboHandle;
-    glGenBuffers(1, &vboHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, vboHandle);  
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
     // Check for OpenGL errors (and throw exception)
 
@@ -90,7 +86,7 @@ void CAIOpenGLComputePipeline::compute(float *results)
     // Use results texture as frame buffer
     // Uniform and use textures
 
-    shaderProgram.use();
+    m_shaderProgram.use();
 
     // "Draw" call
     // Fetch results from texture
